@@ -12,7 +12,7 @@ imports
 begin
 
 
-subsection \<open>Petri Net\<close>
+subsection \<open>Petri Nets\<close>
 
 record ('pl,'tr) petri_net =
   P :: "'pl set"
@@ -20,3 +20,8 @@ record ('pl,'tr) petri_net =
   Pre :: "'tr \<Rightarrow> 'pl \<Rightarrow> nat"
   Post :: "'tr \<Rightarrow> 'pl \<Rightarrow> nat"
 
+
+subsection \<open>Markings\<close>
+
+typedef ('pl) markings = "{(m::'pl \<Rightarrow> nat). True}"
+  by auto
