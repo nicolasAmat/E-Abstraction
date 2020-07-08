@@ -7,7 +7,7 @@ section \<open>Petri Net\<close>
 text \<open>This section contains Petri nets formalization\<close>
 
 theory Petri_Net
-imports
+  imports
   "HOL-Library.Function_Algebras"
 begin
 
@@ -36,6 +36,17 @@ definition fired :: "('pl,'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarr
   "fired pn m tr \<equiv> Abs_markings ((Rep_markings m) - (Pre pn tr) + (Post pn tr))"
 
 
+subsection \<open>Firing Sequence\<close>
+
+fun firing_sequence :: "('pl, 'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> 'tr list \<Rightarrow> bool" where
+  "firing_sequence pn m [] = True"
+| "firing_sequence pn m (tr#seq) = ( (fireable pn m tr) \<and> (firing_sequence pn (fired pn m tr) seq))"
+
+
+subsection \<open>Reachable Markings\<close>
+
+(* TODO *)
+
 subsection \<open>Pre and Post Sets\<close>
 
 definition transition_pre_set :: "('pl,'tr) petri_net \<Rightarrow> 'tr \<Rightarrow> 'pl set" where
@@ -52,5 +63,9 @@ definition place_pre_set :: "('pl,'tr) petri_net \<Rightarrow> 'pl \<Rightarrow>
 
 definition place_post_set :: "('pl,'tr) petri_net \<Rightarrow> 'pl \<Rightarrow> 'tr set" where
 "place_post_set pn pl \<equiv> {tr. Pre pn tr pl > 0}"
+
+
+subsection \<open>Labelling\<close>
+
 
 end
