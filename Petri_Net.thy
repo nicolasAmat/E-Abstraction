@@ -7,8 +7,8 @@ section \<open>Petri Net\<close>
 text \<open>This section contains Petri nets formalization\<close>
 
 theory Petri_Net
-imports 
-  Main
+imports
+  "HOL-Library.Function_Algebras"
 begin
 
 
@@ -31,3 +31,9 @@ subsection \<open>Behavior\<close>
 
 definition fireable :: "('pl,'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> 'tr \<Rightarrow> bool" where
   "fireable pn m t \<equiv> (Rep_markings m) \<ge> (Pre pn t)"
+
+definition fired :: "('pl,'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> 'tr \<Rightarrow> ('pl) markings" where
+  "fired pn m t \<equiv> Abs_markings ((Rep_markings m) + (Pre pn t))"
+
+
+end
