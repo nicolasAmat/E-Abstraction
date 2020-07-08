@@ -33,7 +33,7 @@ definition fireable :: "('pl,'tr) petri_net \<Rightarrow> ('pl) markings \<Right
   "fireable pn m t \<equiv> (Rep_markings m) \<ge> (Pre pn t)"
 
 definition fired :: "('pl,'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> 'tr \<Rightarrow> ('pl) markings" where
-  "fired pn m t \<equiv> Abs_markings ((Rep_markings m) + (Pre pn t))"
+  "fired pn m t \<equiv> Abs_markings ((Rep_markings m) - (Pre pn t) + (Post pn t))"
 
 
 end
