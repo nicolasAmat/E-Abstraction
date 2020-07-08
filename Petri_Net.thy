@@ -30,10 +30,27 @@ typedef ('pl) markings = "{(m::'pl \<Rightarrow> nat). True}"
 subsection \<open>Behavior\<close>
 
 definition fireable :: "('pl,'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> 'tr \<Rightarrow> bool" where
-  "fireable pn m t \<equiv> (Rep_markings m) \<ge> (Pre pn t)"
+  "fireable pn m tr \<equiv> (Rep_markings m) \<ge> (Pre pn tr)"
 
 definition fired :: "('pl,'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> 'tr \<Rightarrow> ('pl) markings" where
-  "fired pn m t \<equiv> Abs_markings ((Rep_markings m) - (Pre pn t) + (Post pn t))"
+  "fired pn m tr \<equiv> Abs_markings ((Rep_markings m) - (Pre pn tr) + (Post pn tr))"
 
+
+subsection \<open>Pre and Post Sets\<close>
+
+definition transition_pre_set :: "('pl,'tr) petri_net \<Rightarrow> 'tr \<Rightarrow> 'pl set" where
+"transition_pre_set pn tr \<equiv> {pl. Pre pn tr pl > 0}"
+
+
+definition transition_post_set :: "('pl,'tr) petri_net \<Rightarrow> 'tr \<Rightarrow> 'pl set" where
+"transition_post_set pn tr \<equiv> {pl. Post pn tr pl > 0}"
+
+
+definition place_pre_set :: "('pl,'tr) petri_net \<Rightarrow> 'pl \<Rightarrow> 'tr set" where
+"place_pre_set pn pl \<equiv> {tr. Post pn tr pl > 0}"
+
+
+definition place_post_set :: "('pl,'tr) petri_net \<Rightarrow> 'pl \<Rightarrow> 'tr set" where
+"place_post_set pn pl \<equiv> {tr. Pre pn tr pl > 0}"
 
 end
