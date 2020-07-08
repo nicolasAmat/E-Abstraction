@@ -25,3 +25,9 @@ subsection \<open>Markings\<close>
 
 typedef ('pl) markings = "{(m::'pl \<Rightarrow> nat). True}"
   by auto
+
+
+subsection \<open>Behavior\<close>
+
+definition fireable :: "('pl,'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> 'tr \<Rightarrow> bool" where
+  "fireable pn m t \<equiv> (Rep_markings m) \<ge> (Pre pn t)"
