@@ -49,14 +49,17 @@ fun reached_marking_sequence :: "('pl,'tr) petri_net \<Rightarrow> ('pl) marking
 
 subsection \<open>Reachable Markings\<close>
 
+definition reachable_marking :: "('pl, 'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> ('pl) markings \<Rightarrow> bool" where
+  "reachable_marking pn m0 m \<equiv> \<exists>seq. (firing_sequence pn m0 seq) \<and> (reached_marking_sequence pn m0 seq = m)"
+
 definition reachable_markings :: "('pl, 'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> ('pl) markings set" where
-"reachable_markings pn m0 = {m. \<exists>seq. (firing_sequence pn m0 seq) \<and> (reached_marking_sequence pn m0 seq = m)} "
+"reachable_markings pn m0 = {m. reachable_marking pn m0 m} "
 
 lemma init_marking_reachable:
   fixes pn::"('pl,'tr) petri_net"
     and m0::"('pl) markings"
   shows "m0 \<in> reachable_markings pn m0"
-  using firing_sequence.simps(1) reachable_markings_def by fastforce
+  by (metis firing_sequence.simps(1) mem_Collect_eq reachable_marking_def reachable_markings_def reached_marking_sequence.simps(1))
 
 
 subsection \<open>Pre and Post Sets\<close>
@@ -75,6 +78,9 @@ definition place_pre_set :: "('pl,'tr) petri_net \<Rightarrow> 'pl \<Rightarrow>
 
 definition place_post_set :: "('pl,'tr) petri_net \<Rightarrow> 'pl \<Rightarrow> 'tr set" where
 "place_post_set pn pl \<equiv> {tr. Pre pn tr pl > 0}"
+
+
+
 
 
 subsection \<open>Labelling\<close>
