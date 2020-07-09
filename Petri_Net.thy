@@ -67,20 +67,20 @@ subsection \<open>Pre and Post Sets\<close>
 definition transition_pre_set :: "('pl,'tr) petri_net \<Rightarrow> 'tr \<Rightarrow> 'pl set" where
 "transition_pre_set pn tr \<equiv> {pl. Pre pn tr pl > 0}"
 
-
 definition transition_post_set :: "('pl,'tr) petri_net \<Rightarrow> 'tr \<Rightarrow> 'pl set" where
 "transition_post_set pn tr \<equiv> {pl. Post pn tr pl > 0}"
 
-
 definition place_pre_set :: "('pl,'tr) petri_net \<Rightarrow> 'pl \<Rightarrow> 'tr set" where
 "place_pre_set pn pl \<equiv> {tr. Post pn tr pl > 0}"
-
 
 definition place_post_set :: "('pl,'tr) petri_net \<Rightarrow> 'pl \<Rightarrow> 'tr set" where
 "place_post_set pn pl \<equiv> {tr. Pre pn tr pl > 0}"
 
 
 subsection \<open>Labelling\<close>
+
+typedef ('tr,'lb) labellings = "{(l::'tr \<Rightarrow> 'lb option). True}"
+  by auto
 
 
 end
