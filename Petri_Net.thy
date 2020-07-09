@@ -38,14 +38,20 @@ definition fired :: "('pl,'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarr
 
 subsection \<open>Firing Sequence\<close>
 
-fun firing_sequence :: "('pl, 'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> 'tr list \<Rightarrow> bool" where
+fun firing_sequence :: "('pl,'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> 'tr list \<Rightarrow> bool" where
   "firing_sequence pn m [] = True"
-| "firing_sequence pn m (tr#seq) = ( (fireable pn m tr) \<and> (firing_sequence pn (fired pn m tr) seq))"
+| "firing_sequence pn m (tr#seq) = ((fireable pn m tr) \<and> (firing_sequence pn (fired pn m tr) seq))"
+
+fun reached_marking_sequence :: "('pl,'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> 'tr list \<Rightarrow> ('pl) markings" where
+  "reached_marking_sequence pn m [] = m"
+| "reached_marking_sequence pn m (tr#seq) = reached_marking_sequence pn (fired pn m tr) seq"
 
 
 subsection \<open>Reachable Markings\<close>
 
-(* TODO *)
+definition reachable_markings :: "('pl, 'tr) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> ('pl) markings set" where
+"reachable_markings pn m0 = {m. \<exists>seq. (firing_sequence pn m0 seq) \<and> (reached_marking_sequence pn m0 seq = m)} "
+
 
 subsection \<open>Pre and Post Sets\<close>
 
