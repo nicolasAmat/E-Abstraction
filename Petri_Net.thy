@@ -27,7 +27,7 @@ subsection \<open>Petri Nets\<close>
 record ('pl,'tr,'lb) petri_net =
   P :: "'pl set"
   T :: "'tr set"
-  Pre :: "'tr \<Rightarrow> 'pl \<Rightarrow> nat"
+  Pre :: "'tr \<Rightarrow> 'pl \<Rightarrow> nat"  
   Post :: "'tr \<Rightarrow> 'pl \<Rightarrow> nat"  
   m0 :: "('pl) markings"
   l :: "('tr,'lb) labellings"
@@ -79,9 +79,9 @@ definition place_post_set :: "('pl,'tr,'lb) petri_net \<Rightarrow> 'pl \<Righta
 
 subsection \<open>Observable Sequence\<close>
 
-fun observable_sequence :: "('pl,'tr,'lb) petri_net \<Rightarrow> 'tr list \<Rightarrow> 'lb option list" where
-"observable_sequence pn [] = []" |
-"observable_sequence pn (tr#seq) = ((Rep_labellings (l pn)) tr)#(observable_sequence pn seq)"
+fun observable_sequence :: "('tr,'lb) labellings \<Rightarrow> 'tr list \<Rightarrow> 'lb option list" where
+"observable_sequence lb [] = []" |
+"observable_sequence lb (tr#seq) = ((Rep_labellings lb tr)#(observable_sequence lb seq))"
 
 fun similar_observable_sequences :: "'lb option list \<Rightarrow> 'lb option list \<Rightarrow> bool" where
 "similar_observable_sequences [] [] = True" |
@@ -96,32 +96,43 @@ subsection \<open>Compatible Markings\<close>
 definition compatible_markings :: "('pl,'tr,'lb) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> ('pl,'tr,'lb) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> bool" where
 "compatible_markings N1 m1 N2 m2 \<equiv> \<forall>p \<in> (P N1) \<inter> (P N2). (Rep_markings m1 p) = (Rep_markings m2 p)"
 
-subsection \<open>System of Equations\<close>
+subsection \<open>Abstraction\<close>
 
 typedef ('pl,'add_var) system_equations = "{(E::'add_var list \<Rightarrow> ('pl) markings \<Rightarrow> ('pl) markings \<Rightarrow> bool). True}"
   by simp
 
-definition solvable :: "('pl,'add_var) system_equations \<Rightarrow> 'add_var list \<Rightarrow> bool" where
-"solvable E add_vars \<equiv> (\<forall>m1. \<exists>m2. (Rep_system_equations E) add_vars m1 m2) 
-                     \<and> (\<forall>m2. \<exists>m1. (Rep_system_equations E) add_vars m1 m2)"
+record ('pl,'add_var) abstraction =
+  add_vars :: "'add_var list"
+  system :: "('pl,'add_var) system_equations"
+
+definition abstraction_model :: "('pl,'add_var) abstraction \<Rightarrow>  ('pl) markings \<Rightarrow> ('pl) markings \<Rightarrow> bool" where
+"abstraction_model E m1 m2 \<equiv> (Rep_system_equations (system E)) (add_vars E) m1 m2"
+
+definition solvable :: "('pl,'add_var) abstraction \<Rightarrow> bool" where
+"solvable E \<equiv> (\<forall>m1. \<exists>m2. abstraction_model E m1 m2) 
+            \<and> (\<forall>m2. \<exists>m1. abstraction_model E m1 m2)"
+
+subsection \<open>Markings Compatible With Abstraction\<close>
+
+definition markings_compatible_with_abstraction :: "('pl,'tr,'lb) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> ('pl,'add_var) abstraction \<Rightarrow> ('pl,'tr,'lb) petri_net \<Rightarrow> ('pl) markings \<Rightarrow> bool" where
+"markings_compatible_with_abstraction N1 m1 E N2 m2 \<equiv> (compatible_markings N1 m1 N2 m2) \<and> (abstraction_model E m1 m2)"
 
 subsection \<open>E-Abstraction\<close>
 
-definition initial_markings_cond :: "('pl,'tr,'lb) petri_net \<Rightarrow> ('pl,'add_var) system_equations \<Rightarrow> 'add_var list \<Rightarrow> ('pl,'tr,'lb) petri_net \<Rightarrow> bool" where
-"initial_markings_cond N1 E add_vars N2 \<equiv> (compatible_markings N1 (m0 N1) N2 (m0 N2)) \<and> ((Rep_system_equations E) add_vars (m0 N1) (m0 N2))"
+definition initial_markings_cond :: "('pl,'tr,'lb) petri_net \<Rightarrow> ('pl,'add_var) abstraction \<Rightarrow> ('pl,'tr,'lb) petri_net \<Rightarrow> bool" where
+"initial_markings_cond N1 E N2 \<equiv> markings_compatible_with_abstraction N1 (m0 N1) E N2 (m0 N2)"
 
-definition observable_sequences_cond :: "('pl,'tr,'lb) petri_net \<Rightarrow> ('pl, 'add_var) system_equations \<Rightarrow> 'add_var list  \<Rightarrow> ('pl,'tr,'lb) petri_net \<Rightarrow> bool" where 
-"observable_sequences_cond N1 E add_vars N2 \<equiv> 
-  \<forall>s1::('lb option list). \<forall>m1::(('pl) markings). \<forall>tr1::(('tr) list).
-    ((firing_sequence N1 (m0 N1) tr1) \<and> (m1 = (resulting_marking_firing_sequence N1 (m0 N1) tr1)))
-      \<longrightarrow> (\<forall>m2::(('pl) markings). ((compatible_markings N1 m1 N2 m2) \<and> ((Rep_system_equations E) add_vars m1 m2))
-        \<longrightarrow> (\<exists>tr2. (firing_sequence N2 (m0 N2) tr2) \<and> (similar_observable_sequences s1 (observable_sequence N2 tr2))))"
+definition observable_sequences_cond :: "('pl,'tr,'lb) petri_net \<Rightarrow> ('pl,'add_var) abstraction \<Rightarrow> ('pl,'tr,'lb) petri_net \<Rightarrow> bool" where 
+"observable_sequences_cond N1 E N2 \<equiv> 
+  \<forall>tr1. (firing_sequence N1 (m0 N1) tr1)
+  \<longrightarrow> (\<forall>m2. (markings_compatible_with_abstraction N1 (resulting_marking_firing_sequence N1 (m0 N1) tr1) E N2 m2)
+      \<longrightarrow> (\<exists>tr2. (m2 = resulting_marking_firing_sequence N2 (m0 N2) tr2) \<and> (similar_observable_sequences (observable_sequence (l N1) tr1) (observable_sequence (l N2) tr2))))"
 
-definition E_abstraction :: "('pl,'tr,'lb) petri_net \<Rightarrow> ('pl, 'add_var) system_equations \<Rightarrow> 'add_var list  \<Rightarrow> ('pl,'tr,'lb) petri_net \<Rightarrow> bool" where
-"E_abstraction N1 E add_vars N2 \<equiv> (initial_markings_cond N1 E add_vars N2) \<and> (observable_sequences_cond  N1 E add_vars N2)"
+definition E_abstraction :: "('pl,'tr,'lb) petri_net \<Rightarrow> ('pl,'add_var) abstraction \<Rightarrow> ('pl,'tr,'lb) petri_net \<Rightarrow> bool" where
+"E_abstraction N1 E N2 \<equiv> (initial_markings_cond N1 E N2) \<and> (observable_sequences_cond  N1 E N2)"
 
-definition E_abstraction_equivalence :: "('pl,'tr,'lb) petri_net \<Rightarrow> ('pl, 'ad_var) system_equations \<Rightarrow> 'ad_var list  \<Rightarrow> ('pl,'tr,'lb) petri_net \<Rightarrow> bool" where
-"E_abstraction_equivalence N1 E ad_vars N2 \<equiv> (E_abstraction N1 E ad_vars N2) \<and>  (E_abstraction N2 E ad_vars N1)"
+definition E_abstraction_equivalence :: "('pl,'tr,'lb) petri_net \<Rightarrow> ('pl,'ad_var) abstraction  \<Rightarrow> ('pl,'tr,'lb) petri_net \<Rightarrow> bool" where
+"E_abstraction_equivalence N1 E N2 \<equiv> (E_abstraction N1 E N2) \<and>  (E_abstraction N2 E N1)"
 
 
 end
